@@ -51,7 +51,7 @@
             border-radius: 50%;
             font-size: 1.5rem;
             cursor: pointer;
-            z-index: 99999 !important; /* Mutlak berada di lapisan paling atas */
+            z-index: 99999 !important;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -67,7 +67,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Ornamen Atas dan Bawah meniru pola di video */
+        /* Ornamen Atas dan Bawah */
         .ornament {
             font-size: 1.2rem;
             color: #d2a65a;
@@ -158,13 +158,6 @@
             60% {transform: translateY(-5px);}
         }
 
-        /* Footer */
-        footer {
-            color: black;
-            text-align: center;
-            padding: 20px;
-            margin-top: 50px;
-        }
     </style>
 </head>
 <body>
@@ -173,7 +166,7 @@
         <source src="https://archive.org/download/ClaudeDebussyClairDeLuneFromTwilight/Claude%20Debussy%20-%20Clair%20de%20lune%20%28From%20Twilight%29.mp3" type="audio/mpeg">
     </audio>
 
-    <button id="musicBtn" onclick="toggleMusic()">🎵</button>
+    <button id="musicBtn" onclick="toggleMusic()" title="Putar/Hentikan Musik">🎵</button>
 
     <section class="page" id="page1">
         <div class="ornament"></div>
@@ -183,7 +176,7 @@
             <span class="gold">08.06.2026</span>
         </div>
         <div class="ornament"></div>
-        <div class="scroll-down">Scroll ke bawah ↓</div>
+        <div class="scroll-down">Ketuk layar untuk membuka undangan ↓</div>
     </section>
 
     <section class="page" id="page2">
@@ -226,7 +219,7 @@
         <p class="text-regular">
             Kehadiran Anda akan<br>
             sangat berarti bagi kami,<br>
-            terima kasih!
+            teria kasih!
         </p>
 
         <div class="address-box" style="margin-top: 30px;">
@@ -238,37 +231,86 @@
             #THEWEDDINGOFKUDUS&RIRIN
         </div>
         <div class="ornament"></div>
+        
+        <p style="text-align: center; color: rgba(255,255,255,0.3); font-size: 0.7rem; margin-top: 50px;">
+            © 2026 D2N OFFICIAL.
+        </p>
     </section>
 
     <script>
         var music = document.getElementById("weddingMusic");
         var musicBtn = document.getElementById("musicBtn");
+        var isScrolling = false;
+        var scrollAnimation;
+        var userInteracting = false;
+        var interactionTimeout;
 
+        // --- KONTROL MUSIK ---
         function toggleMusic() {
             if (music.paused) {
                 music.play(); 
                 musicBtn.classList.add("spinning"); 
                 musicBtn.innerText = "🎵";
+                startScroll();
             } else {
                 music.pause(); 
                 musicBtn.classList.remove("spinning"); 
                 musicBtn.innerText = "🔇";
+                stopScroll();
             }
         }
+
+        // --- KONTROL AUTO-SCROLL OTOMATIS ---
+        function autoScroll() {
+            if (!userInteracting && isScrolling) {
+                // Kecepatan disesuaikan lambat (0.7) agar serasi dengan lagu Clair de Lune
+                window.scrollBy(0, 0.7); 
+                
+                // Berhenti otomatis jika sudah mentok di bawah
+                if ((window.innerHeight + Math.ceil(window.scrollY)) >= document.body.offsetHeight) {
+                    stopScroll();
+                }
+            }
+            scrollAnimation = requestAnimationFrame(autoScroll);
+        }
+
+        function startScroll() {
+            if(!isScrolling) {
+                isScrolling = true;
+                scrollAnimation = requestAnimationFrame(autoScroll);
+            }
+        }
+
+        function stopScroll() {
+            isScrolling = false;
+            cancelAnimationFrame(scrollAnimation);
+        }
+
+        // Fungsi mendeteksi jika user menyentuh/scroll manual agar tidak berbenturan
+        function userInteractionHandler() {
+            userInteracting = true;
+            clearTimeout(interactionTimeout);
+            
+            // Auto-scroll jalan lagi setelah 2.5 detik user berhenti menyentuh layar
+            interactionTimeout = setTimeout(function() {
+                userInteracting = false;
+            }, 2500);
+        }
         
-        // Otomatis putar musik begitu tamu menyentuh atau melakukan scroll pertama kali
+        // --- EVENT LISTENER ---
+        // Ketukan pertama: Hidupkan musik & auto-scroll langsung jalan
         document.addEventListener('click', function() {
             if (music.paused) { 
                 music.play(); 
                 musicBtn.classList.add("spinning"); 
+                startScroll();
             }
         }, { once: true });
+        
+        // Listener interaksi manual
+        window.addEventListener('wheel', userInteractionHandler);
+        window.addEventListener('touchstart', userInteractionHandler);
     </script>
 
-    <p style="text-align: center; color: rgba(255,255,255,0.3); font-size: 0.7rem; margin-bottom: 20px;">
-        © 2026 D2NJ OFFICIAL.
-    </p>
-
 </body> 
-  </html>
-
+</html>
