@@ -162,7 +162,7 @@
 </head>
 <body>
 
-    <audio id="weddingMusic" loop>
+    <audio id="weddingMusic" autoplay loop>
         <source src="https://archive.org/download/ClaudeDebussyClairDeLuneFromTwilight/Claude%20Debussy%20-%20Clair%20de%20lune%20%28From%20Twilight%29.mp3" type="audio/mpeg">
     </audio>
 
@@ -176,7 +176,7 @@
             <span class="gold">08.06.2026</span>
         </div>
         <div class="ornament"></div>
-        <div class="scroll-down">Ketuk layar untuk membuka undangan ↓</div>
+        <div class="scroll-down">Gulir otomatis dimulai ↓</div>
     </section>
 
     <section class="page" id="page2">
@@ -219,7 +219,7 @@
         <p class="text-regular">
             Kehadiran Anda akan<br>
             sangat berarti bagi kami,<br>
-            teria kasih!
+            terima kasih!
         </p>
 
         <div class="address-box" style="margin-top: 30px;">
@@ -240,10 +240,26 @@
     <script>
         var music = document.getElementById("weddingMusic");
         var musicBtn = document.getElementById("musicBtn");
-        var isScrolling = false;
-        var scrollAnimation;
+        var isScrolling = true;
         var userInteracting = false;
         var interactionTimeout;
+
+        // --- MULAI SAAT HALAMAN DIMUAT ---
+        window.onload = function() {
+            // Memulai scroll otomatis
+            requestAnimationFrame(autoScroll);
+
+            // Memaksa musik agar langsung menyala
+            var playPromise = music.play();
+            if (playPromise !== undefined) {
+                playPromise.then(function() {
+                    musicBtn.classList.add("spinning");
+                }).catch(function(error) {
+                    // Jika browser memblokir auto-play, tunggu interaksi sentuhan dari pengguna
+                    console.log("Autoplay diblokir oleh browser. Menunggu interaksi pengunjung.");
+                });
+            }
+        };
 
         // --- KONTROL MUSIK ---
         function toggleMusic() {
@@ -251,63 +267,53 @@
                 music.play(); 
                 musicBtn.classList.add("spinning"); 
                 musicBtn.innerText = "🎵";
-                startScroll();
             } else {
                 music.pause(); 
                 musicBtn.classList.remove("spinning"); 
                 musicBtn.innerText = "🔇";
-                stopScroll();
             }
         }
 
-        // --- KONTROL AUTO-SCROLL OTOMATIS ---
+        // --- AUTO-SCROLL YANG LEBIH CEPAT ---
         function autoScroll() {
             if (!userInteracting && isScrolling) {
-                // Kecepatan disesuaikan lambat (0.7) agar serasi dengan lagu Clair de Lune
-                window.scrollBy(0, 0.7); 
+                // Kecepatan diatur ke 1.5 agar lebih cepat tapi tetap bisa dibaca
+                window.scrollBy(0, 1.5); 
                 
-                // Berhenti otomatis jika sudah mentok di bawah
+                // Berhenti otomatis jika sudah mentok di bagian paling bawah
                 if ((window.innerHeight + Math.ceil(window.scrollY)) >= document.body.offsetHeight) {
-                    stopScroll();
+                    isScrolling = false; 
                 }
             }
-            scrollAnimation = requestAnimationFrame(autoScroll);
-        }
-
-        function startScroll() {
-            if(!isScrolling) {
-                isScrolling = true;
-                scrollAnimation = requestAnimationFrame(autoScroll);
+            
+            // Lanjutkan animasi selama statusnya true
+            if (isScrolling) {
+                requestAnimationFrame(autoScroll);
             }
         }
 
-        function stopScroll() {
-            isScrolling = false;
-            cancelAnimationFrame(scrollAnimation);
-        }
-
-        // Fungsi mendeteksi jika user menyentuh/scroll manual agar tidak berbenturan
+        // --- INTERAKSI MANUAL PENGGUNA ---
         function userInteractionHandler() {
             userInteracting = true;
             clearTimeout(interactionTimeout);
             
-            // Auto-scroll jalan lagi setelah 2.5 detik user berhenti menyentuh layar
+            // Jeda sementara saat layar disentuh, lalu auto-scroll jalan lagi setelah 2 detik
             interactionTimeout = setTimeout(function() {
                 userInteracting = false;
-            }, 2500);
+            }, 2000);
         }
         
         // --- EVENT LISTENER ---
-        // Ketukan pertama: Hidupkan musik & auto-scroll langsung jalan
+        // Jika auto-play musik diblokir, ketukan pertama akan menyalakannya
         document.addEventListener('click', function() {
             if (music.paused) { 
                 music.play(); 
                 musicBtn.classList.add("spinning"); 
-                startScroll();
+                musicBtn.innerText = "🎵";
             }
         }, { once: true });
         
-        // Listener interaksi manual
+        // Mendeteksi jika pengunjung menggeser layar sendiri
         window.addEventListener('wheel', userInteractionHandler);
         window.addEventListener('touchstart', userInteractionHandler);
     </script>
