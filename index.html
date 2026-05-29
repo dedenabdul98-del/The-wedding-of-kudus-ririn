@@ -277,8 +277,8 @@
         // --- AUTO-SCROLL YANG LEBIH CEPAT ---
         function autoScroll() {
             if (!userInteracting && isScrolling) {
-                // Kecepatan diatur ke 6 agar lebih cepat tapi tetap bisa dibaca
-                window.scrollBy(0, 6); 
+                // Kecepatan diatur ke 10 agar lebih cepat tapi tetap bisa dibaca
+                window.scrollBy(0, 10); 
                 
                 // Berhenti otomatis jika sudah mentok di bagian paling bawah
                 if ((window.innerHeight + Math.ceil(window.scrollY)) >= document.body.offsetHeight) {
